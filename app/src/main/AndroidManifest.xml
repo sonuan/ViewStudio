@@ -20,8 +20,9 @@
         </activity>
         <activity android:name=".activity.CircleLoadingActivity">
         </activity>
-        <activity android:name=".activity.LetterListActivity"
-            >
+        <activity android:name=".activity.LetterListActivity">
+        </activity>
+        <activity android:name=".activity.RefreshListViewActivity">
         </activity>
     </application>
 
