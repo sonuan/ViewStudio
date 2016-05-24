@@ -3,6 +3,7 @@ package com.wusongyuan.customviewstudio.widget;
 import android.content.Context;
 import android.graphics.BitmapFactory;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -18,6 +19,8 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ProgressBar;
+import android.widget.Scroller;
 import android.widget.TextView;
 
 import com.wusongyuan.customviewstudio.R;
@@ -29,6 +32,8 @@ import com.wusongyuan.customviewstudio.R;
  **********************/
 @SuppressWarnings("ResourceType")
 public class RefreshListView extends ListView {
+
+    private static final String TAG = RefreshListView.class.getSimpleName();
     /**
      * 偏移系数
      */
@@ -62,7 +67,6 @@ public class RefreshListView extends ListView {
         } else {
             if (mOnLoadMoreListener != null) {
                 try {
-                    mProgressFooter.clearAnimation();
                     removeFooterView(mViewFooter);
                     mProgressFooter.setVisibility(View.VISIBLE);
                     mViewFooterFailure.setVisibility(View.GONE);
@@ -92,15 +96,17 @@ public class RefreshListView extends ListView {
      */
     private LinearLayout mViewHeader;
     private ImageView mIVHeader;
-    private ImageView mProgressHeader;
+    private ProgressBar mProgressHeader;
     private TextView mTVHeader;
     private int mHeaderHeight;
+    private int mCurrHeaderHeight;
+
 
     /**
      * 加载更多控件
      */
     private LinearLayout mViewFooter;
-    private ImageView mProgressFooter;
+    private ProgressBar mProgressFooter;
     /**
      * 加载更多失败提示控件
      */
@@ -149,6 +155,10 @@ public class RefreshListView extends ListView {
      */
     private OnLoadMoreListener mOnLoadMoreListener;
 
+    private final static int SCROLL_DURATION = 400; // scroll back duration
+
+    private Scroller mScroller;
+
     /**
      * 构造方法
      *
@@ -166,6 +176,8 @@ public class RefreshListView extends ListView {
      * @param context 设备上下文环境
      */
     private void init(Context context) {
+        mScroller = new Scroller(context);
+
         // 翻转动画
         mFlipAnimation = new RotateAnimation(0, -180,
                 Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF,
@@ -228,15 +240,15 @@ public class RefreshListView extends ListView {
         params.gravity = Gravity.CENTER;
         mIVHeader.setLayoutParams(params);
         mIVHeader.setImageResource(R.drawable.ptr_flip);
+
         // 载入中图片
-        mProgressHeader = new ImageView(context);
-        mProgressHeader.setVisibility(View.INVISIBLE);
+        mProgressHeader = new ProgressBar(context);
+        mProgressHeader.setVisibility(INVISIBLE);
         params = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.WRAP_CONTENT,
                 FrameLayout.LayoutParams.WRAP_CONTENT);
         params.gravity = Gravity.CENTER;
         mProgressHeader.setLayoutParams(params);
-        mProgressHeader.setImageResource(R.drawable.ptr_rotate);
 
         fl.addView(mIVHeader);
         fl.addView(mProgressHeader);
@@ -278,13 +290,12 @@ public class RefreshListView extends ListView {
         opts.inDensity = 240;
         opts.inTargetDensity = getResources().getDisplayMetrics().densityDpi;
 
-        mProgressFooter = new ImageView(context);
+        mProgressFooter = new ProgressBar(context);
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT);
         params.gravity = Gravity.CENTER;
         mProgressFooter.setLayoutParams(params);
-        mProgressFooter.setImageResource(R.drawable.ic_loading);
 
         if (mViewFooterFailure == null) {
             // 默认加载更多失败提示信息
@@ -314,7 +325,6 @@ public class RefreshListView extends ListView {
             removeFooterView(mViewFooter);
         }
     }
-
 
     /**
      * 设置加载更多加载失败显示内容
@@ -394,7 +404,7 @@ public class RefreshListView extends ListView {
         @Override
         public void onScrollStateChanged(AbsListView view, int scrollState) {
             // 判断是否调用加载更多
-            if (getLastVisiblePosition() == getCount() - 1 && !isLoadMoreing
+            if (getLastVisiblePosition() == getCount() - 1 && !isRefreshing && !isLoadMoreing
                     && isLoadMoreable && scrollState == SCROLL_STATE_IDLE) {
                 onLoadMore();
             }
@@ -410,7 +420,7 @@ public class RefreshListView extends ListView {
             // 判断是否允许下拉刷新
             isRefreshable = firstVisibleItem == 0;
             // 判断是否调用加载更多
-            if (visibleItemCount == totalItemCount && !isLoadMoreing
+            if (visibleItemCount == totalItemCount && !isRefreshing && !isLoadMoreing
                     && isLoadMoreable && !isRefreshing) {
                 onLoadMore();
             }
@@ -473,12 +483,10 @@ public class RefreshListView extends ListView {
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
         if (isRefreshing) {
-            mProgressHeader.clearAnimation();
-            mProgressHeader.startAnimation(mHeaderAnimation);
+            mProgressHeader.setVisibility(View.VISIBLE);
         }
         if (isLoadMoreing) {
-            mProgressFooter.clearAnimation();
-            mProgressFooter.startAnimation(mFooterAnimation);
+            mProgressFooter.setVisibility(View.VISIBLE);
         }
     }
 
@@ -562,7 +570,19 @@ public class RefreshListView extends ListView {
         if (mViewHeader == null) {
             return;
         }
+        mCurrHeaderHeight = mHeaderHeight + scrollY;
         mViewHeader.setPadding(0, scrollY, 0, 0);
+    }
+
+    @Override
+    public void computeScroll() {
+        // 判断mScroller滚动是否完成
+        if (mScroller.computeScrollOffset()) {
+            mCurrHeaderHeight = mScroller.getCurrY();
+            mViewHeader.setPadding(0, mScroller.getCurrY() - mHeaderHeight, 0, 0);
+            postInvalidate();
+        }
+        super.computeScroll();
     }
 
     /**
@@ -595,23 +615,28 @@ public class RefreshListView extends ListView {
         if (mViewHeader == null) {
             return;
         }
-
-
         mIVHeader.clearAnimation();
-        mProgressHeader.clearAnimation();
         mProgressHeader.setVisibility(View.INVISIBLE);
-        if (isRefreshSuccess) {
-            mTVHeader.setText("刷新成功");
-        }else{
-            mTVHeader.setText("刷新失败");
+        resetHeaderHeight();
+    }
+
+    private void resetHeaderHeight() {
+        if (mHeaderHeight == 0) // not visible.
+            return;
+        // refreshing and header isn't shown fully. do nothing.
+        if (isRefreshing && mCurrHeaderHeight <= mHeaderHeight) {
+            return;
         }
-        postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                mViewHeader.setPadding(0, -1 * mHeaderHeight, 0, 0);
-                mIVHeader.setVisibility(View.VISIBLE);
-            }
-        },400);
+        int finalHeight = 0;
+        if (isRefreshing && mCurrHeaderHeight > mHeaderHeight) {
+            finalHeight = mHeaderHeight;
+        }
+        Log.i("resetHeaderHeight", "currHeaderHeight" + mCurrHeaderHeight + "  finalHeight" + finalHeight + " " +
+                "mHeaderHeight" + mHeaderHeight);
+
+        mScroller.startScroll(0, mCurrHeaderHeight, 0, finalHeight - mCurrHeaderHeight,
+                SCROLL_DURATION);
+        invalidate();
     }
 
     /**
@@ -645,13 +670,12 @@ public class RefreshListView extends ListView {
         if (mViewHeader == null) {
             return;
         }
-        mViewHeader.setPadding(0, 0, 0, 0);
+        isRefreshing = true;
         mIVHeader.clearAnimation();
         mIVHeader.setVisibility(View.INVISIBLE);
-
-        mProgressHeader.startAnimation(mHeaderAnimation);
         mProgressHeader.setVisibility(View.VISIBLE);
         mTVHeader.setText("正在刷新");
+        resetHeaderHeight();
     }
 
     /**
@@ -668,24 +692,29 @@ public class RefreshListView extends ListView {
         }
     }
 
-    private boolean isRefreshSuccess;
 
-    /**
-     * 下拉刷新加载成功
-     */
-    public void onRefreshSuccess() {
-        isRefreshSuccess = true;
+    private void onRefreshComplete(boolean isSuccess) {
+        if (isSuccess) {
+            mTVHeader.setText("刷新成功");
+        } else {
+            mTVHeader.setText("刷新失败");
+        }
         isRefreshing = false;
         mState = State.RESET;
-        reset();
-
+        mIVHeader.clearAnimation();
+        mProgressHeader.setVisibility(View.INVISIBLE);
+        postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                resetHeaderHeight();
+            }
+        }, SCROLL_DURATION);
         if (mOnLoadMoreListener != null) {
             try {
-                mProgressFooter.clearAnimation();
+                mProgressFooter.setVisibility(INVISIBLE);
                 removeFooterView(mViewFooter);
                 if (isLoadMoreable) {
-                    mProgressFooter.setVisibility(View.VISIBLE);
-                    mProgressFooter.startAnimation(mFooterAnimation);
+                    mProgressFooter.setVisibility(View.INVISIBLE);
                     mViewFooterFailure.setVisibility(View.GONE);
                     addFooterView(mViewFooter, null, false);
                 }
@@ -695,27 +724,17 @@ public class RefreshListView extends ListView {
     }
 
     /**
+     * 下拉刷新加载成功
+     */
+    public void onRefreshSuccess() {
+        onRefreshComplete(true);
+    }
+
+    /**
      * 下拉刷新加载失败
      */
     public void onRefreshFailure() {
-        isRefreshSuccess = false;
-        isRefreshing = false;
-        mState = State.RESET;
-        reset();
-
-        if (mOnLoadMoreListener != null) {
-            try {
-                mProgressFooter.clearAnimation();
-                removeFooterView(mViewFooter);
-                if (isLoadMoreable) {
-                    mProgressFooter.setVisibility(View.VISIBLE);
-                    mProgressFooter.startAnimation(mFooterAnimation);
-                    mViewFooterFailure.setVisibility(View.GONE);
-                    addFooterView(mViewFooter, null, false);
-                }
-            } catch (Exception e) {
-            }
-        }
+        onRefreshComplete(false);
     }
 
     /**
@@ -725,8 +744,6 @@ public class RefreshListView extends ListView {
         isLoadMoreing = true;
 
         mProgressFooter.setVisibility(View.VISIBLE);
-        mProgressFooter.clearAnimation();
-        mProgressFooter.startAnimation(mFooterAnimation);
         mViewFooterFailure.setVisibility(View.GONE);
         if (mOnLoadMoreListener != null) {
             mOnLoadMoreListener.onLoadMore();
@@ -742,7 +759,7 @@ public class RefreshListView extends ListView {
         isLoadMoreing = false;
         if (!isLoadMoreable) {
             try {
-                mProgressFooter.clearAnimation();
+                mProgressFooter.setVisibility(INVISIBLE);
                 removeFooterView(mViewFooter);
             } catch (Exception e) {
             }
@@ -755,8 +772,7 @@ public class RefreshListView extends ListView {
     public void onLoadMoreFailure() {
         isLoadMoreing = false;
         isLoadMoreable = false;
-        mProgressFooter.clearAnimation();
-        mProgressFooter.setVisibility(View.GONE);
+        mProgressFooter.setVisibility(View.INVISIBLE);
         mViewFooterFailure.setVisibility(View.VISIBLE);
     }
 
