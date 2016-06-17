@@ -1,11 +1,11 @@
 package com.wusongyuan.customviewstudio.widget;
 
 import android.animation.Animator;
-import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.SweepGradient;
@@ -28,6 +28,7 @@ public class CircleLoadingView extends View {
      * 圆形进度条
      */
     private Paint mCirclePaint = new Paint();
+    private Paint mCirclePaint2 = new Paint();
     /**
      * 圆形进度条
      */
@@ -62,6 +63,7 @@ public class CircleLoadingView extends View {
      * 正在绘制打钩进度条状态
      */
     public static final int STATUS_TICK = 1;
+    public static final int STATUS_LOADING = 2;
 
     private int mStatus = STATUS_CIRCLE;
 
@@ -71,9 +73,13 @@ public class CircleLoadingView extends View {
 
 
     private int mColor = 0xffffffff;
-    /**圆形背景色*/
+    /**
+     * 圆形背景色
+     */
     private int mColor_BG = 0x99ffffff;
-    /**渐变颜色*/
+    /**
+     * 渐变颜色
+     */
     private int mColors[] = new int[]{0xFFFFFFFF, 0xFF888888, 0xFF000000};
     private int mRadius;
 
@@ -84,6 +90,7 @@ public class CircleLoadingView extends View {
      * 起始角度
      */
     private float mStartAngle;
+    private static final float START_ANGLE = -90;
     /**
      * 结束角度
      */
@@ -132,6 +139,7 @@ public class CircleLoadingView extends View {
     public CircleLoadingView(Context context, AttributeSet attrs) {
         super(context, attrs);
         initPaint();
+        mStartAngle = START_ANGLE;
     }
 
     public CircleLoadingView(Context context, AttributeSet attrs, int defStyleAttr) {
@@ -147,6 +155,12 @@ public class CircleLoadingView extends View {
         mCirclePaint.setStrokeCap(Paint.Cap.ROUND); // 圆角线条
         mCirclePaint.setShader(shader); // 渐变
 
+        mCirclePaint2.setAntiAlias(true);
+        mCirclePaint2.setColor(mColor);
+        mCirclePaint2.setStrokeWidth(mStrokeWidth);
+        mCirclePaint2.setStyle(Paint.Style.STROKE); //
+        mCirclePaint2.setStrokeCap(Paint.Cap.ROUND); // 圆角线条
+
         mCircleBgPaint.setAntiAlias(true);
         mCircleBgPaint.setColor(mColor_BG);
         mCircleBgPaint.setStrokeWidth(mStrokeWidth * 2);
@@ -156,8 +170,9 @@ public class CircleLoadingView extends View {
         mTickPaint.setAntiAlias(true);
         mTickPaint.setStrokeCap(Paint.Cap.ROUND);
         mTickPaint.setColor(mColor);
-        mTickPaint.setStyle(Paint.Style.FILL);
+        mTickPaint.setStyle(Paint.Style.STROKE);
         mTickPaint.setStrokeWidth(mStrokeWidth);
+
     }
 
     @Override
@@ -189,15 +204,26 @@ public class CircleLoadingView extends View {
     float start2X = 0;
     float start2Y = 0;
 
+    private Path mPath = new Path();
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         // 绘制圆形进度条背景
         canvas.drawArc(mRectF, 0, 360, false, mCircleBgPaint);
         switch (mStatus) {
+            case STATUS_LOADING:
+                if (progress > 0) {
+                    //                    canvas.drawArc(mRectF, -90 + mStartAngle * 360, (mEndAngle - mStartAngle) *
+                    //                                    360, false,
+                    //                            mCirclePaint);
+                    canvas.drawArc(mRectF, -90 + progress * 360, progress * 360, false, mCirclePaint2);
+                }
+                break;
             case STATUS_CIRCLE:
-                if (mEndAngle > 0) {
-                    canvas.drawArc(mRectF, -90 + mStartAngle * 360, (mEndAngle-mStartAngle) * 360, false, mCirclePaint);
+                if (progress > 0) {
+                    canvas.drawArc(mRectF, mStartAngle, progress * 360, false,
+                            mCirclePaint);
                 }
                 break;
             case STATUS_TICK:
@@ -205,27 +231,45 @@ public class CircleLoadingView extends View {
                 float startX = mRectF.left + mRadius / 2;
                 float startY = mRectF.top + mRadius;
 
+                mPath.moveTo(startX, startY);
                 if (tickPercent > 0 && tickPercent < ONE_THIRD_PERCENT) {
                     stop1X = startX + tickPercent * mRadius;
                     stop1Y = startY + tickPercent * mRadius;
                     start2X = stop1X;
                     start2Y = stop1Y;
-                    canvas.drawLine(startX, startY, stop1X, stop1Y, mTickPaint);
+                    mPath.lineTo(stop1X, stop1Y);
                 }
-
                 if (tickPercent >= ONE_THIRD_PERCENT && tickPercent <= 1f) {
-                    canvas.drawLine(startX, startY, start2X, start2Y, mTickPaint);
+                    mPath.lineTo(start2X, start2Y);
                     float stop2X = start2X + (tickPercent - ONE_THIRD_PERCENT) * mRadius;
                     float stop2Y = start2Y - (tickPercent - ONE_THIRD_PERCENT) * mRadius;
-                    canvas.drawLine(start2X, start2Y, stop2X, stop2Y, mTickPaint);
+                    mPath.lineTo(stop2X, stop2Y);
                 }
+
+                canvas.drawPath(mPath, mTickPaint);
+
+                //-------画两条线,已用path替换了-----------
+                //                if (tickPercent > 0 && tickPercent < ONE_THIRD_PERCENT) {
+                //                    stop1X = startX + tickPercent * mRadius;
+                //                    stop1Y = startY + tickPercent * mRadius;
+                //                    start2X = stop1X;
+                //                    start2Y = stop1Y;
+                //                    canvas.drawLine(startX, startY, stop1X, stop1Y, mTickPaint);
+                //                }
+                //
+                //                if (tickPercent >= ONE_THIRD_PERCENT && tickPercent <= 1f) {
+                //                    canvas.drawLine(startX, startY, start2X, start2Y, mTickPaint);
+                //                    float stop2X = start2X + (tickPercent - ONE_THIRD_PERCENT) * mRadius;
+                //                    float stop2Y = start2Y - (tickPercent - ONE_THIRD_PERCENT) * mRadius;
+                //                    canvas.drawLine(start2X, start2Y, stop2X, stop2Y, mTickPaint);
+                //                }
                 break;
         }
-
 
     }
 
     public void loading() {
+        mStatus = STATUS_LOADING;
         mStartAngleAnimator = ValueAnimator.ofFloat(0, 1f);
         mStartAngleAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
         mStartAngleAnimator.setDuration(2000);
@@ -265,18 +309,18 @@ public class CircleLoadingView extends View {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 float value = (float) animation.getAnimatedValue();
-                setEndAngle(value);
-                if (value >= 0.5) {
-                    if (mStartAngleAnimator != null && !mStartAngleAnimator.isRunning()) {
-                        mStartAngleAnimator.start();
-                    }
-                }
+                setProgress(value);
+                postInvalidate();
+//                if (value >= 0.3) {
+//                    if (mStartAngleAnimator != null) {
+//                        mStartAngleAnimator.start();
+//                    }
+//                }
             }
         });
         mEndAngleAnimator.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animation) {
-                mStatus = STATUS_CIRCLE;
 
             }
 
@@ -294,42 +338,52 @@ public class CircleLoadingView extends View {
 
             }
         });
-
-        mLoadingAnimator = ValueAnimator.ofFloat(0, 1f);
-        mLoadingAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
-        mLoadingAnimator.setDuration(2000);
-        mLoadingAnimator.setRepeatCount(-1);
-        mLoadingAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                postInvalidate();
-            }
-        });
-        mLoadingAnimator.addListener(new Animator.AnimatorListener() {
-            @Override
-            public void onAnimationStart(Animator animation) {
-                mEndAngleAnimator.start();
-            }
-
-            @Override
-            public void onAnimationEnd(Animator animation) {
-
-            }
-
-            @Override
-            public void onAnimationCancel(Animator animation) {
-
-            }
-
-            @Override
-            public void onAnimationRepeat(Animator animation) {
-
-            }
-        });
-        mLoadingAnimator.start();
+        mEndAngleAnimator.start();
+//        mLoadingAnimator = ValueAnimator.ofFloat(0, 1f);
+//        mLoadingAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
+//        mLoadingAnimator.setDuration(2000);
+//        mLoadingAnimator.setRepeatCount(-1);
+//        mLoadingAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+//            @Override
+//            public void onAnimationUpdate(ValueAnimator animation) {
+//                postInvalidate();
+//            }
+//        });
+//        mLoadingAnimator.addListener(new Animator.AnimatorListener() {
+//            @Override
+//            public void onAnimationStart(Animator animation) {
+//                mEndAngleAnimator.start();
+//            }
+//
+//            @Override
+//            public void onAnimationEnd(Animator animation) {
+//
+//            }
+//
+//            @Override
+//            public void onAnimationCancel(Animator animation) {
+//
+//            }
+//
+//            @Override
+//            public void onAnimationRepeat(Animator animation) {
+//
+//            }
+//        });
+//        mLoadingAnimator.start();
     }
 
     public void loadSuccess() {
+        startCircleAnim();
+    }
+
+    private void startCircleAnim() {
+        if (mStartAngleAnimator != null) {
+            if (mStartAngleAnimator.isRunning())
+                mStartAngleAnimator.cancel();
+            mStartAngleAnimator.start();
+            return;
+        }
         mStartAngleAnimator = ValueAnimator.ofFloat(0, 1f);
         mStartAngleAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
         mStartAngleAnimator.setDuration(2000);
@@ -344,13 +398,11 @@ public class CircleLoadingView extends View {
             @Override
             public void onAnimationStart(Animator animation) {
                 mStatus = STATUS_CIRCLE;
-
             }
 
             @Override
             public void onAnimationEnd(Animator animation) {
-                mStatus = STATUS_TICK;
-                ObjectAnimator.ofFloat(CircleLoadingView.this, "tickPercent", 0f, 1f).setDuration(1000).start();
+                startTickAnim();
             }
 
             @Override
@@ -363,5 +415,31 @@ public class CircleLoadingView extends View {
 
             }
         });
+        mStartAngleAnimator.start();
+    }
+
+    private ValueAnimator mTickAnimator;
+
+    private void startTickAnim() {
+        mStatus = STATUS_TICK;
+        mPath.reset();
+        if (mTickAnimator != null) {
+            if (mTickAnimator.isRunning()) {
+                mTickAnimator.cancel();
+            }
+            mTickAnimator.start();
+            return;
+        }
+        mTickAnimator = ValueAnimator.ofFloat(0f, 1f);
+        mTickAnimator.setDuration(1000);
+        mTickAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                float value = (float) animation.getAnimatedValue();
+                setTickPercent(value);
+                postInvalidate();
+            }
+        });
+        mTickAnimator.start();
     }
 }
