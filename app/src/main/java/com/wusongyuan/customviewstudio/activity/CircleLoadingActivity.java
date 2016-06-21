@@ -3,14 +3,16 @@ package com.wusongyuan.customviewstudio.activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.view.View;
 
 import com.wusongyuan.customviewstudio.R;
+import com.wusongyuan.customviewstudio.base.BaseActivity;
 import com.wusongyuan.customviewstudio.widget.CircleLoadingView;
 
+import butterknife.BindView;
+import butterknife.OnClick;
 
-public class CircleLoadingActivity extends AppCompatActivity implements View.OnClickListener{
+
+public class CircleLoadingActivity extends BaseActivity {
 
     private static final String TAG = "CircleLoadingActivity";
 
@@ -19,21 +21,42 @@ public class CircleLoadingActivity extends AppCompatActivity implements View.OnC
         context.startActivity(intent);
     }
 
-    private CircleLoadingView mCircleLoadingView;
-
+    @BindView(R.id.circle_loading_view)
+    public CircleLoadingView mCircleLoadingView;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_circle_loading);
-        setTitle("仿支付宝sdk支付结果View");
-        findViewById(R.id.btn_start).setOnClickListener(this);
-        mCircleLoadingView = (CircleLoadingView) findViewById(R.id.myview);
+    public int getContentView() {
+        return R.layout.activity_circle_loading;
     }
 
     @Override
-    public void onClick(View v) {
+    public void initViews() {
+        setTitle("仿支付宝sdk支付结果View");
+    }
+
+    @Override
+    public void initDatas(Bundle savedInstanceState) {
+
+    }
+
+    @OnClick(R.id.btn_loading)
+    public void loading() {
         mCircleLoadingView.loading();
     }
 
+    @OnClick(R.id.btn_loading2)
+    public void loading2() {
+        mCircleLoadingView.loading2();
+    }
+
+    @OnClick(R.id.btn_success)
+    public void success() {
+        mCircleLoadingView.loadSuccess();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mCircleLoadingView.cancel();
+    }
 }

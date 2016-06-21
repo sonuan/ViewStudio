@@ -16,6 +16,8 @@ import android.widget.TextView;
 import com.wusongyuan.customviewstudio.OnItemClickListener;
 import com.wusongyuan.customviewstudio.R;
 
+import butterknife.ButterKnife;
+
 
 public class HomeActivity extends AppCompatActivity implements OnItemClickListener {
 
@@ -28,6 +30,7 @@ public class HomeActivity extends AppCompatActivity implements OnItemClickListen
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+        ButterKnife.setDebug(true);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         mRecyclerView = (RecyclerView) findViewById(R.id.recyclerview);

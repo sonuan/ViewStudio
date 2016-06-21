@@ -1,6 +1,7 @@
 package com.wusongyuan.customviewstudio.widget;
 
 import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
@@ -9,9 +10,14 @@ import android.graphics.Path;
 import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.SweepGradient;
+import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.Animation;
+import android.view.animation.Interpolator;
+import android.view.animation.LinearInterpolator;
 
 /**********************
  * @author: wusongyuan
@@ -64,6 +70,7 @@ public class CircleLoadingView extends View {
      */
     public static final int STATUS_TICK = 1;
     public static final int STATUS_LOADING = 2;
+    public static final int STATUS_LOADING2 = STATUS_LOADING + 1;
 
     private int mStatus = STATUS_CIRCLE;
 
@@ -95,6 +102,10 @@ public class CircleLoadingView extends View {
      * 结束角度
      */
     private float mEndAngle;
+
+    private static final float END_TRIM_DURATION_OFFSET = 1.0f;
+    private static final float START_TRIM_DURATION_OFFSET = 0.5f;
+    private ValueAnimator mValueAnimator;
 
 
     public float getProgress() {
@@ -212,6 +223,14 @@ public class CircleLoadingView extends View {
         // 绘制圆形进度条背景
         canvas.drawArc(mRectF, 0, 360, false, mCircleBgPaint);
         switch (mStatus) {
+            case STATUS_LOADING2:
+                int saveCount = canvas.save();
+                canvas.rotate(mGroupRotation, mRectF.centerX(), mRectF.centerY());
+
+                canvas.drawArc(mRectF, mStartDegrees, mSwipeDegrees, false, mCirclePaint2);
+                canvas.restoreToCount(saveCount);
+
+                break;
             case STATUS_LOADING:
                 if (progress > 0) {
                     //                    canvas.drawArc(mRectF, -90 + mStartAngle * 360, (mEndAngle - mStartAngle) *
@@ -268,6 +287,81 @@ public class CircleLoadingView extends View {
 
     }
 
+    private float mEndDegrees;
+    private float mStartDegrees;
+    private float mSwipeDegrees;
+    private float mOriginEndDegrees;
+    private float mOriginStartDegrees;
+
+    private float mRotationCount;
+    private float mGroupRotation;
+
+
+    private static final int DEGREE_360 = 360;
+    private static final int NUM_POINTS = 5;
+
+
+    private static final Interpolator MATERIAL_INTERPOLATOR = new FastOutSlowInInterpolator();
+
+    private static final float MIN_SWIPE_DEGREE = 0.1f;
+    private static final float MAX_SWIPE_DEGREES = 0.8f * DEGREE_360;
+    private static final float FULL_GROUP_ROTATION = 3.0f * DEGREE_360;
+    private static final float MAX_ROTATION_INCREMENT = 0.25f * DEGREE_360;
+
+    public void loading2() {
+        mStatus = STATUS_LOADING2;
+        mValueAnimator = ValueAnimator.ofFloat(0.0f, 1.0f);
+        mValueAnimator.setInterpolator(new LinearInterpolator());
+        mValueAnimator.setDuration(2000);
+        mValueAnimator.setRepeatCount(Animation.INFINITE);
+        mValueAnimator.setRepeatMode(Animation.RESTART);
+        mValueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                float renderProgress = (float) animation.getAnimatedValue();
+                if (renderProgress <= START_TRIM_DURATION_OFFSET) {
+                    float startTrimProgress = renderProgress / START_TRIM_DURATION_OFFSET;
+                    mStartDegrees = mOriginStartDegrees + MAX_SWIPE_DEGREES * MATERIAL_INTERPOLATOR.getInterpolation
+                            (startTrimProgress);
+                }
+
+                if (renderProgress > START_TRIM_DURATION_OFFSET) {
+                    float endTrimProgress = (renderProgress - START_TRIM_DURATION_OFFSET) / (END_TRIM_DURATION_OFFSET
+                            - START_TRIM_DURATION_OFFSET);
+                    mEndDegrees = mOriginEndDegrees + MAX_SWIPE_DEGREES * MATERIAL_INTERPOLATOR.getInterpolation
+                            (endTrimProgress);
+
+                }
+
+                if (Math.abs(mEndDegrees - mStartDegrees) > MIN_SWIPE_DEGREE) {
+                    mSwipeDegrees = mEndDegrees - mStartDegrees;
+                }
+                Log.i(TAG, "mStartDegrees: " + mStartDegrees + " mEndDegrees:" + mEndDegrees + " mSwipeDegrees:" +
+                        mSwipeDegrees);
+                mGroupRotation = ((FULL_GROUP_ROTATION / NUM_POINTS) * renderProgress) + (FULL_GROUP_ROTATION * (mRotationCount / NUM_POINTS));
+
+                postInvalidate();
+            }
+        });
+        mValueAnimator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+                super.onAnimationRepeat(animation);
+                mOriginEndDegrees = mEndDegrees;
+                mOriginStartDegrees = mStartDegrees;
+                mStartDegrees = mEndDegrees;
+                mRotationCount = (mRotationCount + 1) % (NUM_POINTS);
+            }
+
+            @Override
+            public void onAnimationStart(Animator animation) {
+                super.onAnimationStart(animation);
+                mRotationCount = 0;
+            }
+        });
+        mValueAnimator.start();
+    }
+
     public void loading() {
         mStatus = STATUS_LOADING;
         mStartAngleAnimator = ValueAnimator.ofFloat(0, 1f);
@@ -311,11 +405,11 @@ public class CircleLoadingView extends View {
                 float value = (float) animation.getAnimatedValue();
                 setProgress(value);
                 postInvalidate();
-//                if (value >= 0.3) {
-//                    if (mStartAngleAnimator != null) {
-//                        mStartAngleAnimator.start();
-//                    }
-//                }
+                //                if (value >= 0.3) {
+                //                    if (mStartAngleAnimator != null) {
+                //                        mStartAngleAnimator.start();
+                //                    }
+                //                }
             }
         });
         mEndAngleAnimator.addListener(new Animator.AnimatorListener() {
@@ -339,38 +433,38 @@ public class CircleLoadingView extends View {
             }
         });
         mEndAngleAnimator.start();
-//        mLoadingAnimator = ValueAnimator.ofFloat(0, 1f);
-//        mLoadingAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
-//        mLoadingAnimator.setDuration(2000);
-//        mLoadingAnimator.setRepeatCount(-1);
-//        mLoadingAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-//            @Override
-//            public void onAnimationUpdate(ValueAnimator animation) {
-//                postInvalidate();
-//            }
-//        });
-//        mLoadingAnimator.addListener(new Animator.AnimatorListener() {
-//            @Override
-//            public void onAnimationStart(Animator animation) {
-//                mEndAngleAnimator.start();
-//            }
-//
-//            @Override
-//            public void onAnimationEnd(Animator animation) {
-//
-//            }
-//
-//            @Override
-//            public void onAnimationCancel(Animator animation) {
-//
-//            }
-//
-//            @Override
-//            public void onAnimationRepeat(Animator animation) {
-//
-//            }
-//        });
-//        mLoadingAnimator.start();
+        //        mLoadingAnimator = ValueAnimator.ofFloat(0, 1f);
+        //        mLoadingAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
+        //        mLoadingAnimator.setDuration(2000);
+        //        mLoadingAnimator.setRepeatCount(-1);
+        //        mLoadingAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+        //            @Override
+        //            public void onAnimationUpdate(ValueAnimator animation) {
+        //                postInvalidate();
+        //            }
+        //        });
+        //        mLoadingAnimator.addListener(new Animator.AnimatorListener() {
+        //            @Override
+        //            public void onAnimationStart(Animator animation) {
+        //                mEndAngleAnimator.start();
+        //            }
+        //
+        //            @Override
+        //            public void onAnimationEnd(Animator animation) {
+        //
+        //            }
+        //
+        //            @Override
+        //            public void onAnimationCancel(Animator animation) {
+        //
+        //            }
+        //
+        //            @Override
+        //            public void onAnimationRepeat(Animator animation) {
+        //
+        //            }
+        //        });
+        //        mLoadingAnimator.start();
     }
 
     public void loadSuccess() {
@@ -441,5 +535,9 @@ public class CircleLoadingView extends View {
             }
         });
         mTickAnimator.start();
+    }
+
+    public void cancel() {
+        mValueAnimator.reverse();
     }
 }

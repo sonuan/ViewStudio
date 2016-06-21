@@ -24,6 +24,8 @@
         </activity>
         <activity android:name=".activity.RefreshListViewActivity">
         </activity>
+        <activity android:name=".base.BaseActivity">
+        </activity>
     </application>
 
 </manifest>
