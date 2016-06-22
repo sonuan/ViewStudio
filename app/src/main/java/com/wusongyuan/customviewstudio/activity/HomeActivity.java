@@ -24,7 +24,12 @@ public class HomeActivity extends AppCompatActivity implements OnItemClickListen
     RecyclerView mRecyclerView;
     MyRecyclerViewAdapter mAdapter;
 
-    String[] title = {"通讯录列表字母索引View", "仿支付宝sdk支付结果View", "ListView下拉刷新,上拉加载更多"};
+    String[] title = {
+            "通讯录列表字母索引View",
+            "仿支付宝sdk支付结果View",
+            "ListView下拉刷新,上拉加载更多",
+            "让叶子飞起来ProgressPar",
+            "让叶子飞起来ProgressPar-原版"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +67,12 @@ public class HomeActivity extends AppCompatActivity implements OnItemClickListen
                 break;
             case 2:
                 RefreshListViewActivity.toActivity(this);
+                break;
+            case 3:
+                ProgressActivity.toActivity(this);
+                break;
+            case 4:
+                LeafLoadingActivity.toActivity(this);
                 break;
         }
     }
