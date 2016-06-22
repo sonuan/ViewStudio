@@ -41,7 +41,7 @@ public class ProgressActivity extends BaseActivity {
     @OnClick(R.id.btn_start1)
     public void start(){
         ValueAnimator valueAnimator = ValueAnimator.ofInt(0, 100);
-        valueAnimator.setDuration(2000);
+        valueAnimator.setDuration(10000);
         valueAnimator.setInterpolator(new LinearInterpolator());
         valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
