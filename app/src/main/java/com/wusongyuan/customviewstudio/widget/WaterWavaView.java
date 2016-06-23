@@ -34,8 +34,11 @@ public class WaterWavaView extends View {
     private int mTwoOffsetX;
 
     // 第一条水波移动速度
-    private static final int TRANSLATE_X_SPEED_ONE = 7;
-    private static final int TRANSLATE_X_SPEED_TWO = 10;
+    private static final int TRANSLATE_X_SPEED_ONE = 17;
+    private static final int TRANSLATE_X_SPEED_TWO = 13;
+
+    private int mXSpeedOne;
+    private int mXSpeedTwo;
 
     public WaterWavaView(Context context) {
         this(context, null);
@@ -77,9 +80,14 @@ public class WaterWavaView extends View {
         }
 
         mOneOffsetX += TRANSLATE_X_SPEED_ONE;
+        mTwoOffsetX += TRANSLATE_X_SPEED_TWO;
 
         if (mOneOffsetX >= mWidth) {
             mOneOffsetX = 0;
+        }
+
+        if (mTwoOffsetX >= mWidth) {
+            mTwoOffsetX = 0;
         }
 
         postInvalidateDelayed(20);
