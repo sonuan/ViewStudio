@@ -25,8 +25,9 @@
         <activity android:name=".activity.RefreshListViewActivity">
         </activity>
         <activity android:name=".activity.ProgressActivity"/>
-
         <activity android:name=".activity.LeafLoadingActivity"/>
+        <activity android:name=".activity.WaterWavaActivity">
+        </activity>
     </application>
 
 </manifest>

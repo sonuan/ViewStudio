@@ -29,7 +29,8 @@ public class HomeActivity extends AppCompatActivity implements OnItemClickListen
             "仿支付宝sdk支付结果View",
             "ListView下拉刷新,上拉加载更多",
             "让叶子飞起来ProgressPar",
-            "让叶子飞起来ProgressPar-原版"};
+            "让叶子飞起来ProgressPar-原版",
+            "标准正余弦水波纹-drawLine"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,7 +52,7 @@ public class HomeActivity extends AppCompatActivity implements OnItemClickListen
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                 Snackbar.make(view, "你好!个人学习用的,慎重使用!", Snackbar.LENGTH_LONG).setAction("Action", null).show();
+                Snackbar.make(view, "你好!个人学习用的,慎重使用!", Snackbar.LENGTH_LONG).setAction("Action", null).show();
             }
         });
     }
@@ -74,10 +75,13 @@ public class HomeActivity extends AppCompatActivity implements OnItemClickListen
             case 4:
                 LeafLoadingActivity.toActivity(this);
                 break;
+            case 5:
+                WaterWavaActivity.toActivity(this);
+                break;
         }
     }
 
-    public static class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAdapter.ViewHolder>{
+    public static class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAdapter.ViewHolder> {
 
         private String[] mList;
 
@@ -95,9 +99,10 @@ public class HomeActivity extends AppCompatActivity implements OnItemClickListen
 
         }
 
-        public class  ViewHolder extends RecyclerView.ViewHolder{
+        public class ViewHolder extends RecyclerView.ViewHolder {
             TextView tvTitle;
-            public ViewHolder(View view){
+
+            public ViewHolder(View view) {
                 super(view);
                 tvTitle = (TextView) view.findViewById(android.R.id.text1);
             }
@@ -110,7 +115,8 @@ public class HomeActivity extends AppCompatActivity implements OnItemClickListen
 
         @Override
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(android.R.layout.simple_list_item_1, null));
+            return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(android.R.layout
+                    .simple_list_item_1, null));
         }
 
         @Override
