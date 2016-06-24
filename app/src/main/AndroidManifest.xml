@@ -28,6 +28,10 @@
         <activity android:name=".activity.LeafLoadingActivity"/>
         <activity android:name=".activity.WaterWavaActivity">
         </activity>
+        <activity android:name=".activity.XfermodeWaterWavaActivity">
+        </activity>
+        <activity android:name=".activity.XfermodeStudioActivity">
+        </activity>
     </application>
 
 </manifest>

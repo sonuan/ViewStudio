@@ -30,7 +30,9 @@ public class HomeActivity extends AppCompatActivity implements OnItemClickListen
             "ListView下拉刷新,上拉加载更多",
             "让叶子飞起来ProgressPar",
             "让叶子飞起来ProgressPar-原版",
-            "标准正余弦水波纹-drawLine"};
+            "水波纹之标准正余弦-drawLine",
+            "DuffXfermode学习之初级",
+            "水波纹之DuffXfermode"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,6 +79,12 @@ public class HomeActivity extends AppCompatActivity implements OnItemClickListen
                 break;
             case 5:
                 WaterWavaActivity.toActivity(this);
+                break;
+            case 6:
+                XfermodeStudioActivity.toActivity(this);
+                break;
+            case 7:
+                XfermodeWaterWavaActivity.toActivity(this);
                 break;
         }
     }
