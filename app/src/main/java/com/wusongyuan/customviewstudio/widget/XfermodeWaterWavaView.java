@@ -2,7 +2,6 @@ package com.wusongyuan.customviewstudio.widget;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.AvoidXfermode;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -26,7 +25,6 @@ import com.wusongyuan.customviewstudio.R;
 public class XfermodeWaterWavaView extends View {
 
     private static final String TAG = XfermodeWaterWavaView.class.getSimpleName();
-    private final AvoidXfermode mAvoidXfermode;
     private PorterDuffXfermode mPorterDuffXfermode;
     private int mWidth;
     private int mHeight;
@@ -52,6 +50,7 @@ public class XfermodeWaterWavaView extends View {
 
     private int mCurrentPosition;
     private int mHalfWidth;
+    private boolean mIsExit = false;
 
     public XfermodeWaterWavaView(Context context) {
         this(context, null);
@@ -59,14 +58,32 @@ public class XfermodeWaterWavaView extends View {
 
     public XfermodeWaterWavaView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        setLayerType(View.LAYER_TYPE_NONE, null); // 注意此设置, 不然当mCurrentPosition >= mWavaWidth时,图片会出现空白块
         mResources = getResources();
         initPaint();
         initBitmap();
         // 对蓝色相近的颜色进行替换
-        mAvoidXfermode = new AvoidXfermode(Color.RED, 150, AvoidXfermode.Mode.TARGET);
         mPorterDuffXfermode = new PorterDuffXfermode(PorterDuff.Mode.DST_IN);
         mDrawFilter = new PaintFlagsDrawFilter(Paint.ANTI_ALIAS_FLAG, Paint.DITHER_FLAG);
+        new Thread() {
+            public void run() {
+                while (!mIsExit) {
+                    // 不断改变绘制的波浪的位置
+                    mCurrentPosition += 10;
+                    if (mCurrentPosition >= mWavaWidth) {
+                        mCurrentPosition = 0;
+                    }
+                    try {
+                        // 为了保证效果的同时，尽可能将cpu空出来，供其他部分使用
+                        Thread.sleep(30);
+                    } catch (InterruptedException e) {
+                    }
+
+                    postInvalidate();
+                }
+
+            };
+        }.start();
     }
 
     private void initPaint() {
@@ -104,12 +121,12 @@ public class XfermodeWaterWavaView extends View {
         mCanvasPaint.setXfermode(null);
         canvas.restoreToCount(savaLayoutCount);
 
-        mCurrentPosition += 10;
-        if (mCurrentPosition >= mWavaWidth) {
-            mCurrentPosition = 0;
-        }
-
-        postInvalidateDelayed(20);
+//        mCurrentPosition += 10;
+//        if (mCurrentPosition >= mWavaWidth) {
+//            mCurrentPosition = 0;
+//        }
+//
+//        postInvalidateDelayed(20);
 
     }
 
@@ -133,4 +150,9 @@ public class XfermodeWaterWavaView extends View {
         super.onMeasure(widthMeasureSpec, widthMeasureSpec);
     }
 
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        mIsExit = true;
+    }
 }

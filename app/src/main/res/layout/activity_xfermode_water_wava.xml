@@ -8,13 +8,13 @@
     >
 
     <com.wusongyuan.customviewstudio.widget.XfermodeWaterWavaView
-        android:layout_width="173dp"
-        android:layout_height="173dp"
+        android:layout_width="300dp"
+        android:layout_height="300dp"
         />
 
     <com.wusongyuan.customviewstudio.widget.PorterDuffXfermodeView
-        android:layout_width="173dp"
-        android:layout_height="173dp"
+        android:layout_width="300dp"
+        android:layout_height="300dp"
         />
 
 </LinearLayout>

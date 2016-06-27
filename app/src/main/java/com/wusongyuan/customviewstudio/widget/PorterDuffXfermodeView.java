@@ -40,6 +40,7 @@ public class PorterDuffXfermodeView extends View {
     private int mCurrentPosition;
 
     private Thread mThread;
+    private boolean mIsExit = false;
 
     public PorterDuffXfermodeView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -48,9 +49,9 @@ public class PorterDuffXfermodeView extends View {
         mPorterDuffXfermode = new PorterDuffXfermode(PorterDuff.Mode.DST_IN);
         mSpeed = WAVE_TRANS_SPEED;
         mDrawFilter = new PaintFlagsDrawFilter(Paint.ANTI_ALIAS_FLAG, Paint.DITHER_FLAG);
-        mThread = new Thread() {
+        new Thread() {
             public void run() {
-                while (true) {
+                while (!mIsExit) {
                     // 不断改变绘制的波浪的位置
                     mCurrentPosition += mSpeed;
                     if (mCurrentPosition >= mSrcBitmap.getWidth()) {
@@ -65,11 +66,8 @@ public class PorterDuffXfermodeView extends View {
                     postInvalidate();
                 }
 
-            }
-
-            ;
-        };
-        mThread.start();
+            };
+        }.start();
     }
 
     @Override
@@ -143,7 +141,6 @@ public class PorterDuffXfermodeView extends View {
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        if (mThread != null)
-            mThread.stop();
+        mIsExit = true;
     }
 }
