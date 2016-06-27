@@ -32,7 +32,8 @@ public class HomeActivity extends AppCompatActivity implements OnItemClickListen
             "让叶子飞起来ProgressPar-原版",
             "水波纹之标准正余弦-drawLine",
             "DuffXfermode学习之初级",
-            "水波纹之DuffXfermode"};
+            "水波纹之DuffXfermode",
+            "fresco加载gif动画图"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,6 +86,9 @@ public class HomeActivity extends AppCompatActivity implements OnItemClickListen
                 break;
             case 7:
                 XfermodeWaterWavaActivity.toActivity(this);
+                break;
+            case 8:
+                FrescoGifActivity.toActivity(this);
                 break;
         }
     }
