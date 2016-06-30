@@ -76,7 +76,7 @@ public class FrescoGifActivity extends BaseActivity {
     @OnClick(R.id.btn_gif_small)
     public void small() {
         Log.i(TAG, "small: ");
-        Uri uri = Uri.parse("asset:///gif_falali.gif");
+        Uri uri = Uri.parse("asset:///gif_car_run.gif");
         DraweeController controller = Fresco.newDraweeControllerBuilder()
                 .setUri(uri)
                 .setAutoPlayAnimations(true)
