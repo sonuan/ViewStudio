@@ -33,7 +33,8 @@ public class HomeActivity extends AppCompatActivity implements OnItemClickListen
             "水波纹之标准正余弦-drawLine",
             "DuffXfermode学习之初级",
             "水波纹之DuffXfermode",
-            "fresco加载gif动画图"};
+            "fresco加载gif动画图",
+            "映客直播高级礼物之ship"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,6 +90,9 @@ public class HomeActivity extends AppCompatActivity implements OnItemClickListen
                 break;
             case 8:
                 FrescoGifActivity.toActivity(this);
+                break;
+            case 9:
+                ShipGiftActivity.toActivity(this);
                 break;
         }
     }
