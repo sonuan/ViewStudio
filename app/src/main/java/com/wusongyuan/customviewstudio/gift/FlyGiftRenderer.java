@@ -2,13 +2,16 @@ package com.wusongyuan.customviewstudio.gift;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.util.Log;
 
+import com.wusongyuan.customviewstudio.R;
 import com.wusongyuan.customviewstudio.gift.base.LoadingRenderer;
 
 /**********************
@@ -24,10 +27,12 @@ public class FlyGiftRenderer extends LoadingRenderer {
 
     private Bitmap mBitmap;
     private float mProgress;
+    private Bitmap mIconBitmap;
 
     public FlyGiftRenderer(Context context) {
         super(context);
         mProgress = 0;
+        mIconBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_lunzi);
     }
 
     public void onBoundsChange(Rect bounds) {
@@ -38,6 +43,9 @@ public class FlyGiftRenderer extends LoadingRenderer {
     public void draw(Canvas canvas, Rect bounds) {
 
     }
+
+    Matrix matrix = new Matrix();
+
 
     @Override
     public void onDraw(Canvas canvas, Paint paint, Bitmap buffer) {
@@ -50,6 +58,10 @@ public class FlyGiftRenderer extends LoadingRenderer {
         //        mDstRect.set(startX, startY, startX + mBitmap.getWidth(), startY + mBitmap.getHeight());
         mDstRectF.set(startX, startY, startX + mBitmap.getWidth(), startY + mBitmap.getHeight());
         canvas.drawBitmap(buffer, mSrcRect, mDstRectF, paint);
+        canvas.skew(0, -0.5f); // 在y轴倾斜45度
+        matrix.postRotate(-10f, mIconBitmap.getWidth() / 2, mIconBitmap.getHeight() / 2);
+//        matrix.postTranslate(mIconBitmap.getWidth(), mIconBitmap.getHeight());
+        canvas.drawBitmap(mIconBitmap, matrix, paint);
     }
 
     @Override

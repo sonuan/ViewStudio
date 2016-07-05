@@ -34,7 +34,8 @@ public class HomeActivity extends AppCompatActivity implements OnItemClickListen
             "DuffXfermode学习之初级",
             "水波纹之DuffXfermode",
             "fresco加载gif动画图",
-            "映客直播高级礼物之ship"};
+            "映客直播高级礼物之ship",
+    "Android图片旋转,缩放,位移,倾斜"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,6 +94,9 @@ public class HomeActivity extends AppCompatActivity implements OnItemClickListen
                 break;
             case 9:
                 ShipGiftActivity.toActivity(this);
+                break;
+            case 10:
+                BitmapActivity.toActivity(this);
                 break;
         }
     }
