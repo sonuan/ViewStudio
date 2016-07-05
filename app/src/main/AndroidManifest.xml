@@ -41,6 +41,8 @@
         </activity>
         <activity android:name=".activity.BitmapActivity">
         </activity>
+        <activity android:name=".activity.PathActivity">
+        </activity>
     </application>
 
 </manifest>

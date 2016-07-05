@@ -35,7 +35,8 @@ public class HomeActivity extends AppCompatActivity implements OnItemClickListen
             "水波纹之DuffXfermode",
             "fresco加载gif动画图",
             "映客直播高级礼物之ship",
-    "Android图片旋转,缩放,位移,倾斜"};
+    "Android图片旋转,缩放,位移,倾斜",
+    "Path学习"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,6 +98,9 @@ public class HomeActivity extends AppCompatActivity implements OnItemClickListen
                 break;
             case 10:
                 BitmapActivity.toActivity(this);
+                break;
+            case 11:
+                PathActivity.toActivity(this);
                 break;
         }
     }
