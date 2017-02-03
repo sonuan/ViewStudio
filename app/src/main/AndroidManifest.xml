@@ -12,7 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".activity.HomeActivity"
+            android:name=".HomeActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -42,6 +42,10 @@
         <activity android:name=".activity.BitmapActivity">
         </activity>
         <activity android:name=".activity.PathActivity">
+        </activity>
+        <activity android:name=".activity.ViewPagerTransformerActivity">
+        </activity>
+        <activity android:name=".activity.NestingScrollActivity">
         </activity>
     </application>
 

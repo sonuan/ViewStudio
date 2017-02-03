@@ -1,4 +1,4 @@
-package com.wusongyuan.customviewstudio.activity;
+package com.wusongyuan.customviewstudio;
 
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -13,8 +13,20 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.widget.TextView;
 
-import com.wusongyuan.customviewstudio.OnItemClickListener;
-import com.wusongyuan.customviewstudio.R;
+import com.wusongyuan.customviewstudio.activity.BitmapActivity;
+import com.wusongyuan.customviewstudio.activity.CircleLoadingActivity;
+import com.wusongyuan.customviewstudio.activity.FrescoGifActivity;
+import com.wusongyuan.customviewstudio.activity.LeafLoadingActivity;
+import com.wusongyuan.customviewstudio.activity.LetterListActivity;
+import com.wusongyuan.customviewstudio.activity.NestingScrollActivity;
+import com.wusongyuan.customviewstudio.activity.PathActivity;
+import com.wusongyuan.customviewstudio.activity.ProgressActivity;
+import com.wusongyuan.customviewstudio.activity.RefreshListViewActivity;
+import com.wusongyuan.customviewstudio.activity.ShipGiftActivity;
+import com.wusongyuan.customviewstudio.activity.ViewPagerTransformerActivity;
+import com.wusongyuan.customviewstudio.activity.WaterWavaActivity;
+import com.wusongyuan.customviewstudio.activity.XfermodeStudioActivity;
+import com.wusongyuan.customviewstudio.activity.XfermodeWaterWavaActivity;
 
 import butterknife.ButterKnife;
 
@@ -36,7 +48,9 @@ public class HomeActivity extends AppCompatActivity implements OnItemClickListen
             "fresco加载gif动画图",
             "映客直播高级礼物之ship",
     "Android图片旋转,缩放,位移,倾斜",
-    "Path学习"};
+    "Path学习",
+    "用PageTransformer自定义动画",
+    "NestingScroll学习"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,6 +115,12 @@ public class HomeActivity extends AppCompatActivity implements OnItemClickListen
                 break;
             case 11:
                 PathActivity.toActivity(this);
+                break;
+            case 12:
+                ViewPagerTransformerActivity.toActivity(this);
+                break;
+            case 13:
+                NestingScrollActivity.toActivity(this);
                 break;
         }
     }

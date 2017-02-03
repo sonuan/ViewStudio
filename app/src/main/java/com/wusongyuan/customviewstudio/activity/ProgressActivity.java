@@ -10,6 +10,7 @@ import android.view.animation.LinearInterpolator;
 import com.wusongyuan.customviewstudio.R;
 import com.wusongyuan.customviewstudio.base.BaseActivity;
 import com.wusongyuan.customviewstudio.widget.ProgressParView;
+import com.wusongyuan.customviewstudio.widget.ShadowLayout;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -23,6 +24,8 @@ public class ProgressActivity extends BaseActivity {
     }
     @BindView(R.id.progressview)
     ProgressParView mProgressParView;
+    @BindView(R.id.shadowlayout)
+    ShadowLayout mShadowLayout;
 
     @Override
     public int getContentView() {
@@ -52,5 +55,9 @@ public class ProgressActivity extends BaseActivity {
             }
         });
         valueAnimator.start();
+    }
+    @OnClick(R.id.btn_start2)
+    public void startShadow(){
+        mShadowLayout.startAnim();
     }
 }
